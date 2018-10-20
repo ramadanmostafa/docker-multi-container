@@ -1,0 +1,22 @@
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t ramadanmostafa/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run ramadanmostafa/react-test npm test -- --coverage
+
+after_success:
+  - docker build -t ramadanmostafa/multi-client ./client
+  - docker build -t ramadanmostafa/multi-nginx ./nginx
+  - docker build -t ramadanmostafa/multi-server ./server
+  - docker build -t ramadanmostafa/multi-worker ./worker
+  # login docker CLI
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  # push those images to docker hub
+  - docker push ramadanmostafa/multi-client
+  - docker push ramadanmostafa/multi-nginx
+  - docker push ramadanmostafa/multi-server
+  - docker push ramadanmostafa/multi-worker
